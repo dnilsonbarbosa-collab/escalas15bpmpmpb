@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico PWA - Sistema de Escalas</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        pre { background: #333; color: #0f0; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico PWA - Sistema de Escalas 15º BPM</h1>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        // 1. Verificar HTTPS
+        log('<h2>1. Verificação de HTTPS</h2>');
+        if (window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
+            log('✅ Protocolo: ' + window.location.protocol, 'success');
+        } else {
+            log('❌ Protocolo: ' + window.location.protocol + ' (HTTPS obrigatório para PWA)', 'error');
+        }
+
+        // 2. Verificar Service Worker
+        log('<h2>2. Verificação de Service Worker</h2>');
+        if ('serviceWorker' in navigator) {
+            log('✅ Service Worker API disponível', 'success');
+
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg) {
+                    log('✅ Service Worker registrado: ' + reg.scope, 'success');
+                    log('📊 Estado: ' + (reg.active ? 'Ativo' : 'Inativo'));
+                } else {
+                    log('❌ Service Worker NÃO registrado', 'error');
+                }
+            });
+        } else {
+            log('❌ Service Worker API NÃO disponível', 'error');
+        }
+
+        // 3. Verificar Manifest
+        log('<h2>3. Verificação do Manifest</h2>');
+        fetch('manifest.json')
+            .then(res => {
+                if (res.ok) {
+                    log('✅ Manifest.json carregado (Status: ' + res.status + ')', 'success');
+                    return res.json();
+                } else {
+                    log('❌ Erro ao carregar manifest.json: ' + res.status, 'error');
+                    throw new Error('Manifest error');
+                }
+            })
+            .then(manifest => {
+                log('<h3>Conteúdo do Manifest:</h3>');
+                log('<pre>' + JSON.stringify(manifest, null, 2) + '</pre>', 'info');
+
+                // Verificar campos obrigatórios
+                const required = ['name', 'short_name', 'start_url', 'display', 'icons'];
+                required.forEach(field => {
+                    if (manifest[field]) {
+                        log('✅ ' + field + ' presente', 'success');
+                    } else {
+                        log('❌ ' + field + ' AUSENTE', 'error');
+                    }
+                });
+
+                // Verificar ícones
+                if (manifest.icons && manifest.icons.length > 0) {
+                    const has192 = manifest.icons.some(i => i.sizes === '192x192');
+                    const has512 = manifest.icons.some(i => i.sizes === '512x512');
+
+                    if (has192) log('✅ Ícone 192x192 presente', 'success');
+                    else log('❌ Ícone 192x192 AUSENTE', 'error');
+
+                    if (has512) log('✅ Ícone 512x512 presente', 'success');
+                    else log('❌ Ícone 512x512 AUSENTE', 'error');
+                }
+            })
+            .catch(err => {
+                log('❌ Erro: ' + err.message, 'error');
+            });
+
+        // 4. Verificar beforeinstallprompt
+        log('<h2>4. Verificação de Instalação</h2>');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            log('✅ Evento beforeinstallprompt disparado! O PWA é instalável.', 'success');
+
+            // Mostrar botão de instalação
+            const btn = document.createElement('button');
+            btn.textContent = 'Instalar PWA';
+            btn.style.cssText = 'padding: 15px 30px; font-size: 18px; margin: 20px 0; cursor: pointer;';
+            btn.onclick = () => {
+                e.prompt();
+                e.userChoice.then(choice => {
+                    log('👤 Usuário ' + (choice.outcome === 'accepted' ? 'aceitou' : 'recusou') + ' a instalação');
+                });
+            };
+            results.appendChild(btn);
+        });
+
+        // Verificar se já está instalado
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            log('✅ App já está instalado (modo standalone)', 'success');
+        } else {
+            log('ℹ️ App NÃO está instalado (modo browser)', 'info');
+        }
+
+        // 5. Informações do navegador
+        log('<h2>5. Informações do Navegador</h2>');
+        log('Navegador: ' + navigator.userAgent);
+        log('Plataforma: ' + navigator.platform);
+
+        // 6. Verificar cache
+        if ('caches' in window) {
+            log('<h2>6. Cache Storage</h2>');
+            caches.keys().then(names => {
+                if (names.length > 0) {
+                    log('✅ Caches encontrados: ' + names.join(', '), 'success');
+                } else {
+                    log('ℹ️ Nenhum cache encontrado', 'info');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
