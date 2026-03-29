@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#003366">
+    <meta name="description" content="Sistema Integrado de Escalas - 15º BPM/PMPB">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Escalas 15º BPM">
+
+    <title>Sistema de Escalas - 15º BPM</title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #003366 0%, #002244 50%, #1a1a2e 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.15);
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            color: #a0c4ff;
+        }
+
+        /* Barra de divisão */
+        .divider {
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #FFD700, #b22222, #FFD700, transparent);
+            margin: 0 auto 40px;
+            width: 80%;
+            border-radius: 2px;
+        }
+
+        /* Grid de cards */
+        .systems-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            flex: 1;
+        }
+
+        @media (min-width: 768px) {
+            .systems-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Cards */
+        .system-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            text-decoration: none;
+            color: #ffffff;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .system-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .system-card:hover::before {
+            opacity: 1;
+        }
+
+        .system-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(255, 215, 0, 0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 30px rgba(255, 215, 0, 0.1);
+        }
+
+        .system-card.cpu {
+            border-left: 5px solid #003366;
+        }
+
+        .system-card.nufap {
+            border-left: 5px solid #b22222;
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .system-card.cpu .card-icon {
+            background: linear-gradient(135deg, #003366, #0055aa);
+            box-shadow: 0 10px 30px rgba(0, 51, 102, 0.4);
+        }
+
+        .system-card.nufap .card-icon {
+            background: linear-gradient(135deg, #b22222, #8B1A1A);
+            box-shadow: 0 10px 30px rgba(178, 34, 34, 0.4);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-description {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 215, 0, 0.9);
+            color: #003366;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: auto;
+        }
+
+        .footer p {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            color: #a0c4ff;
+        }
+
+        .footer .pmpb-logo {
+            font-weight: 700;
+            color: #FFD700;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        /* Animações */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .system-card {
+            animation: fadeInUp 0.6s ease backwards;
+        }
+
+        .system-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .system-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #003366 0%, #002244 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 215, 0, 0.2);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #FFD700;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-overlay" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Carregando Sistema de Escalas...</div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-badge">15º BPM / PMPB</div>
+            <h1>🚔 Sistema de Escalas</h1>
+            </header>
+
+        <div class="divider"></div>
+
+        <!-- Sistemas -->
+        <div class="systems-grid">
+            <!-- Card Escala CPU -->
+            <a href="cpu.html" class="system-card cpu">
+                <span class="card-badge">Mensal</span>
+                <div class="card-icon">📋</div>
+                <h2 class="card-title">Escala CPU</h2>
+                <p class="card-subtitle">Coordenador do Policiamento da Unidade</p>
+                <p class="card-description">
+                    Sistema completo de escala mensal de CPU com cadastro de militares, 
+                    geração automática de escala, exportação em PDF e PNG.
+                </p>
+            </a>
+
+            <!-- Card Escala NUFAP -->
+            <a href="nufap.html" class="system-card nufap">
+                <span class="card-badge">Semanal</span>
+                <div class="card-icon">🎯</div>
+                <h2 class="card-title">Escala NUFAP-15</h2>
+                <p class="card-subtitle">Núcleo de Formação e Aperfeiçoamento Profissional</p>
+                <p class="card-description">
+                    Sistema de escala semanal NUFAP-15 com gerenciamento de turnos 
+                    (manhã/tarde), múltiplos militares por turno e exportação oficial.
+                </p>
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="pmpb-logo">POLÍCIA MILITAR DA PARAÍBA</p>
+            <p>15º Batalhão de Polícia Militar • Sistema de Gestão de Escalas</p>
+            <p style="margin-top: 10px; font-size: 0.75rem;">© 2026 - Todos os direitos reservados</p>
+        </footer>
+    </div>
+
+    <script>
+        // Esconder loading screen
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 800);
+        });
+
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW registrado:', reg))
+                .catch(err => console.log('SW erro:', err));
+        }
+    </script>
+</body>
+</html>
